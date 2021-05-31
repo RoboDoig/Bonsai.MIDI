@@ -18,12 +18,18 @@ namespace Bonsai.MIDI
         {
             return Observable.Create<int>(async observer =>
             {
-                var inputDevice = await Task.Run(() => InputDevice.GetById(0));
+                var inputDevice = await Task.Run(() => InputDevice.GetById(DeviceIndex)); // TODO - Check available channels before assigning device index
 
                 EventHandler<MidiEventReceivedEventArgs> inputReceived = (sender, e) =>
                 {
                     ControlChangeEvent changeEvent = (ControlChangeEvent)e.Event;
-                    observer.OnNext(changeEvent.ControlValue);
+                    int channelValue = changeEvent.Channel;
+                    int controlNumber = changeEvent.ControlNumber;
+                    int controlValue = changeEvent.ControlValue;
+                    if (controlNumber == ControlChannel)
+                    {
+                        observer.OnNext(controlValue);
+                    }
                 };
                 inputDevice.EventReceived += inputReceived;
                 inputDevice.StartEventsListening();
@@ -38,5 +44,8 @@ namespace Bonsai.MIDI
 
         [Description("The MIDI controller index")]
         public int DeviceIndex { get; set; }
+
+        [Description("The MIDI control channel")]
+        public int ControlChannel { get; set; }
     }
 }
