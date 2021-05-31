@@ -12,18 +12,18 @@ using System.Reactive.Disposables;
 namespace Bonsai.MIDI
 {
     [Description("MIDI controller input")]
-    public class MidiControl : Source<string>
+    public class MidiControl : Source<int>
     {
-        public override IObservable<string> Generate()
+        public override IObservable<int> Generate()
         {
-            return Observable.Create<string>(async observer =>
+            return Observable.Create<int>(async observer =>
             {
                 var inputDevice = await Task.Run(() => InputDevice.GetById(0));
 
                 EventHandler<MidiEventReceivedEventArgs> inputReceived = (sender, e) =>
                 {
                     ControlChangeEvent changeEvent = (ControlChangeEvent)e.Event;
-                    observer.OnNext(changeEvent.ControlValue.ToString());
+                    observer.OnNext(changeEvent.ControlValue);
                 };
                 inputDevice.EventReceived += inputReceived;
                 inputDevice.StartEventsListening();
