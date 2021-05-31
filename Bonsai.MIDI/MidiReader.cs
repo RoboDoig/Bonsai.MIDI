@@ -12,20 +12,20 @@ using Melanchall.DryWetMidi.Devices;
 namespace Bonsai.MIDI
 {
     [Description("MIDI file reader")]
-    public class MidiReader : Source<string>
+    public class MidiReader : Source<int>
     {
         private static Playback playback;
 
-        public override IObservable<string> Generate()
+        public override IObservable<int> Generate()
         {
-            return Observable.Create<string>(async observer =>
+            return Observable.Create<int>(async observer =>
             {
                 var midiFile = await Task.Run(() => MidiFile.Read(FileName));
                 var outputDevice = await Task.Run(() => OutputDevice.GetByName("Microsoft GS Wavetable Synth"));
 
                 EventHandler<NotesEventArgs> onNotesPlaybackStarted = (sender, e) =>
                 {
-                    observer.OnNext(e.Notes.ToString());
+                    observer.OnNext(e.Notes.First().NoteNumber);
                 };
 
                 playback = midiFile.GetPlayback(outputDevice);
